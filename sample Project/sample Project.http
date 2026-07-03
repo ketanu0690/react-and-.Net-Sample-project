@@ -1,0 +1,20 @@
+@sample_Project_HostAddress = http://localhost:5048
+
+GET {{sample_Project_HostAddress}}/weatherforecast/
+Accept: application/json
+
+GET {{sample_Project_HostAddress}}/api/employees/
+Accept: application/json
+
+GET {{sample_Project_HostAddress}}/api/employees/{id} 
+Accept: application/json
+
+POST {{sample_Project_HostAddress}}/api/employees 
+Accept: application/json
+
+PUT {{sample_Project_HostAddress}}/api/employees/{id}/deactivate 
+Accept: application/json
+
+GET {{sample_Project_HostAddress}}/api/departments/{name}/employees/
+Accept: application/json
+###
