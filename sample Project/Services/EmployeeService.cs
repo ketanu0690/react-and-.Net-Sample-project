@@ -7,6 +7,7 @@ public class EmployeeService : IEmployeeService
 {
     private readonly string _filePath;
     private readonly object _lock = new();
+    private List<Employee>? _cache;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -21,14 +22,18 @@ public class EmployeeService : IEmployeeService
 
     private List<Employee> Load()
     {
+        if (_cache is not null) return _cache;
+
         var json = File.ReadAllText(_filePath);
-        return JsonSerializer.Deserialize<List<Employee>>(json, JsonOptions) ?? [];
+        _cache = JsonSerializer.Deserialize<List<Employee>>(json, JsonOptions) ?? [];
+        return _cache;
     }
 
     private void Save(List<Employee> employees)
     {
         var json = JsonSerializer.Serialize(employees, JsonOptions);
         File.WriteAllText(_filePath, json);
+        _cache = employees;
     }
 
     public List<Employee> GetActiveEmployees() => Load().Where(e => e.IsActive).ToList();

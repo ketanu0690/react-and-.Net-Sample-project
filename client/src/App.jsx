@@ -1,14 +1,33 @@
-import { useMemo, useState } from 'react'
-import initialEmployees from './data/employees.json'
+import { useEffect, useMemo, useState } from 'react'
 
+const API = 'http://localhost:5000/api'
 const emptyForm = { name: '', email: '', department: '', salary: '' }
 
 export default function App() {
-  const [allEmployees, setAllEmployees] = useState(initialEmployees)
+  const [allEmployees, setAllEmployees] = useState([])
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState('')
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await fetch(`${API}/employees`)
+      const data = await res.json()
+      setAllEmployees(data)
+      setError('')
+    } catch (err) {
+      setError('Failed to load employees')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const employees = allEmployees.filter((e) => e.isActive)
 
@@ -23,13 +42,18 @@ export default function App() {
     return matchesName && matchesDept
   })
 
-  const deactivate = (id) => {
-    setAllEmployees((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, isActive: false } : e)),
-    )
+  const deactivate = async (id) => {
+    try {
+      const res = await fetch(`${API}/employees/${id}/deactivate`, { method: 'PUT' })
+      if (!res.ok) throw new Error('Failed to deactivate')
+      await fetchEmployees()
+    } catch (err) {
+      setError('Failed to deactivate employee')
+      console.error(err)
+    }
   }
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault()
     setError('')
 
@@ -37,73 +61,88 @@ export default function App() {
       setError('Name, email, and department are required.')
       return
     }
-    if (allEmployees.some((e) => e.email.toLowerCase() === form.email.trim().toLowerCase())) {
-      setError('Email already exists.')
-      return
-    }
 
-    const employee = {
-      id: allEmployees.length ? Math.max(...allEmployees.map((e) => e.id)) + 1 : 1,
-      name: form.name.trim(),
-      email: form.email.trim(),
-      department: form.department.trim(),
-      salary: Number(form.salary) || 0,
-      isActive: true,
+    try {
+      const res = await fetch(`${API}/employees`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          department: form.department.trim(),
+          salary: Number(form.salary) || 0,
+        }),
+      })
+      if (!res.ok) {
+        const error = await res.text()
+        throw new Error(error)
+      }
+      setForm(emptyForm)
+      await fetchEmployees()
+    } catch (err) {
+      setError(err.message || 'Failed to create employee')
+      console.error(err)
     }
-    setAllEmployees((prev) => [...prev, employee])
-    setForm(emptyForm)
   }
 
   return (
     <div style={{ fontFamily: 'sans-serif', padding: 24, maxWidth: 900 }}>
       <h1>Employees</h1>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <input
-          placeholder="Search by name"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select value={department} onChange={(e) => setDepartment(e.target.value)}>
-          <option value="">All departments</option>
-          {departments.map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
-      </div>
-
-      <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Dept</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((e) => (
-            <tr key={e.id}>
-              <td>{e.name}</td>
-              <td>{e.email}</td>
-              <td>{e.department}</td>
-              <td>
-                <button onClick={() => deactivate(e.id)}>Deactivate</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2 style={{ marginTop: 32 }}>Add Employee</h2>
+      {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
-      <form onSubmit={submit} style={{ display: 'grid', gap: 8, maxWidth: 360 }}>
-        <input required placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <input required placeholder="Department" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
-        <input required type="number" placeholder="Salary" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
-        <button type="submit">Create</button>
-      </form>
+
+      {!loading && (
+        <>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+            <input
+              placeholder="Search by name"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <select value={department} onChange={(e) => setDepartment(e.target.value)}>
+              <option value="">All departments</option>
+              {departments.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
+
+          <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Dept</th>
+                <th>Salary</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((e) => (
+                <tr key={e.id}>
+                  <td>{e.name}</td>
+                  <td>{e.email}</td>
+                  <td>{e.department}</td>
+                  <td>${e.salary.toLocaleString()}</td>
+                  <td>
+                    <button onClick={() => deactivate(e.id)}>Deactivate</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <h2 style={{ marginTop: 32 }}>Add Employee</h2>
+          <form onSubmit={submit} style={{ display: 'grid', gap: 8, maxWidth: 360 }}>
+            <input required placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <input required placeholder="Department" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
+            <input required type="number" placeholder="Salary" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
+            <button type="submit">Create</button>
+          </form>
+        </>
+      )}
     </div>
   )
 }

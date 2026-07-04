@@ -2,81 +2,25 @@
   {
     "id": 1,
     "name": "Alice Johnson",
-    "email": "alice.johnson@example.com",
-    "department": "Engineering",
-    "salary": 85000,
-    "isActive": true
-  },
-  {
-    "id": 2,
-    "name": "Bob Smith",
-    "email": "bob.smith@example.com",
+    "email": "alice@example.com",
     "department": "Engineering",
     "salary": 95000,
     "isActive": true
   },
   {
+    "id": 2,
+    "name": "Bob Smith",
+    "email": "bob@example.com",
+    "department": "Sales",
+    "salary": 75000,
+    "isActive": true
+  },
+  {
     "id": 3,
-    "name": "Carol White",
-    "email": "carol.white@example.com",
-    "department": "HR",
-    "salary": 60000,
-    "isActive": true
-  },
-  {
-    "id": 4,
-    "name": "David Brown",
-    "email": "david.brown@example.com",
-    "department": "Finance",
-    "salary": 72000,
-    "isActive": false
-  },
-  {
-    "id": 5,
-    "name": "Eva Green",
-    "email": "eva.green@example.com",
-    "department": "Finance",
-    "salary": 78000,
-    "isActive": true
-  },
-  {
-    "id": 6,
-    "name": "Frank Miller",
-    "email": "frank.miller@example.com",
+    "name": "Carol Davis",
+    "email": "carol@example.com",
     "department": "Engineering",
-    "salary": 105000,
-    "isActive": true
-  },
-  {
-    "id": 7,
-    "name": "Grace Lee",
-    "email": "grace.lee@example.com",
-    "department": "HR",
-    "salary": 65000,
-    "isActive": false
-  },
-  {
-    "id": 8,
-    "name": "Henry Adams",
-    "email": "henry.adams@example.com",
-    "department": "Marketing",
-    "salary": 70000,
-    "isActive": true
-  },
-  {
-    "id": 9,
-    "name": "Ivy Wilson",
-    "email": "ivy.wilson@example.com",
-    "department": "Marketing",
-    "salary": 68000,
-    "isActive": true
-  },
-  {
-    "id": 10,
-    "name": "Jack Taylor",
-    "email": "jack.taylor@example.com",
-    "department": "Finance",
-    "salary": 82000,
+    "salary": 98000,
     "isActive": true
   }
 ]
